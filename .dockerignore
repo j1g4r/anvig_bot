@@ -1,0 +1,12 @@
+.git
+.env
+.env.backup
+.venv
+node_modules
+vendor
+launcher/dist
+launcher/node_modules
+storage/*.key
+docker-compose.yml
+deploy.sh
+README.md

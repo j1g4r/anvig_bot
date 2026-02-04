@@ -1,0 +1,64 @@
+<?php
+
+namespace App\Services;
+
+use Laudis\Neo4j\Authentication\Authenticate;
+use Laudis\Neo4j\ClientBuilder;
+use Laudis\Neo4j\Contracts\ClientInterface;
+
+class KnowledgeService
+{
+    protected ClientInterface $client;
+
+    public function __construct()
+    {
+        $uri = env('NEO4J_URI', 'bolt://localhost:7687');
+        $user = env('NEO4J_USER', 'neo4j');
+        $password = env('NEO4J_PASSWORD', 'password');
+
+        $this->client = ClientBuilder::create()
+            ->withDriver('default', $uri, Authenticate::basic($user, $password))
+            ->build();
+    }
+
+    /**
+     * Index an entity in the graph.
+     */
+    public function indexEntity(string $label, array $properties): void
+    {
+        $query = "MERGE (e:{$label} {name: \$name}) SET e += \$props";
+        
+        $this->client->run($query, [
+            'name' => $properties['name'] ?? 'Unknown',
+            'props' => $properties
+        ]);
+    }
+
+    /**
+     * Create a relationship between two nodes.
+     */
+    public function relate(string $fromLabel, string $fromName, string $toLabel, string $toName, string $relation): void
+    {
+        // Sanitize relation to be uppercase and underscored
+        $relation = strtoupper(str_replace(' ', '_', $relation));
+        
+        $query = "
+            MERGE (a:{$fromLabel} {name: \$fromName})
+            MERGE (b:{$toLabel} {name: \$toName})
+            MERGE (a)-[r:{$relation}]->(b)
+        ";
+        
+        $this->client->run($query, [
+            'fromName' => $fromName,
+            'toName' => $toName
+        ]);
+    }
+
+    /**
+     * Run a raw Cypher query.
+     */
+    public function query(string $cypher, array $params = []): iterable
+    {
+        return $this->client->run($cypher, $params);
+    }
+}
