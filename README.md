@@ -1,3 +1,4 @@
+# ANVIG_BOT (The Autonomous Singularity Engine)
 
 ```
     _    _   ___     _______ ____    ____  ____ _____ 
@@ -7,96 +8,77 @@
 /_/   \_\_| \_|  \_/    |_| \____|  |____/|____/ |_|  
 ```
 
-# The Autonomous Singularity Engine
+**ANVIG_BOT** ("Jerry") is a state-of-the-art **Autonomous Artificial General Intelligence (AAGI) Prototype** designed to operate entirely on local hardware. It represents a paradigm shift from "Chatbot" to "Digital Lifeform"—an entity capable of self-scheduling, self-coding, and maintaining a persistent existence independent of user interaction.
 
-**ANVIG_BOT** ("Jerry") is a state-of-the-art **Autonomous Artificial General Intelligence (AAGI) Prototype** designed to operatie entirely on local hardware. It represents a paradigm shift from "Chatbot" to "Digital Lifeform"—an entity capable of self-scheduling, self-coding, and maintaining a persistent existence independent of user interaction.
-
-> **Core Philosophy:** "The Zero-Stop Loop." The agent does not wait for a user prompt to exist. It thinks, observes, and acts in a continuous background loop, mimicking consciousness.
+> **Core Philosophy:** "The Zero-Stop Loop." The agent thinks, observes, and acts in a continuous background loop, simulating consciousness.
 
 ---
 
 ## 📜 Table of Contents
 1.  [System Architecture](#-system-architecture)
-2.  [The Neural Vision Capacity](#-the-neural-vision-capacity)
-3.  [Core Capabilities](#-core-capabilities)
-4.  [Tool Ecosystem](#-tool-ecosystem)
-5.  [Memory & Database](#-memory--database)
-6.  [Installation & Deployment](#-installation--deployment)
-7.  [Operational Commands](#-operational-commands)
+2.  [The Visual Cortex & Cortex](#-the-visual-cortex--cortex)
+3.  [The Kanban Orchestrator](#-the-kanban-orchestrator)
+4.  [Core Capabilities](#-core-capabilities)
+5.  [Tool Ecosystem](#-tool-ecosystem)
+6.  [Scripts & Automation](#-scripts--automation)
+7.  [Installation & Deployment](#-installation--deployment)
+8.  [Operational Commands](#-operational-commands)
 
 ---
 
 ## 🏗️ System Architecture
 
-The architecture mimics a biological nervous system, built on top of **Laravel 12** (The Central Nervous System) and **Vue 3** (The Visual Cortex).
+The architecture mimics a biological nervous system, built on top of **Laravel 12** (The Central Nervous System) and **Vue 3** (The Visual Interface).
 
 ### 1. The Brain (`AgentService.php`)
-The core logic engine. Unlike standard LLM wrappers, the Brain implements a **Recursive Reasoning Loop**:
-*   **Thought**: The agent analyzes the current context + memory.
-*   **Plan**: It formulates a multi-step plan using Chain-of-Thought (CoT).
-*   **Critique**: It self-corrects potential hallucinations before acting.
-*   **Action**: It executes tools (Shell, Browser, Code).
-*   **Observation**: It reads the output of its actions and repeats the loop.
+The core logic engine implementing a **Recursive Reasoning Loop**:
+*   **Thought**: Analyzes context + memory.
+*   **Plan**: Formulates a multi-step plan (CoT).
+*   **Action**: Executes tools (Shell, Browser, Code).
+*   **Observation**: Reads output and repeats.
 
-### 2. The Pulse (`Queue & Schedule`)
+### 2. The Pulse (`Queue` & `Schedule`)
 The agent is "always on."
 *   **Heartbeat**: A continuous `ProcessAgentThought` job runs in the background.
-*   **Circadian Rhythm**: The `ScheduleTool` allows the agent to write its own Cron jobs into the Laravel Scheduler, effectively deciding *when* to wake up and perform tasks (e.g., "Check crypto prices at 4 AM").
+*   **Circadian Rhythm**: The `ScheduleTool` writes Cron jobs, effectively deciding *when* to wake up.
 
 ### 3. The Nervous System (`Reverb`)
-Real-time WebSockets (Laravel Reverb) connect the backend Brain to the frontend Dashboard, pushing thoughts, logs, and visual updates in milliseconds.
-
-```mermaid
-graph TD
-    subgraph "The Senses"
-        Visual[Computer Vision] -->|Upload| Brain
-        Auditory[Web Speech API] -->|Stream| Brain
-        Telegram[Telegram Bot] -->|Webhook| Brain
-    end
-
-    subgraph "The Brain (AgentService)"
-        Memory[Vector Store] -->|Recall| Context
-        Scheduler[Cron System] -->|Wake| Context
-        Context -->|Compress| LLM[Ollama Llama 3.2]
-    end
-
-    subgraph "The Body (Tools)"
-        LLM -->|Decision| Shell[ShellTool]
-        LLM -->|Decision| Browser[BrowserTool]
-        LLM -->|Decision| Code[Self-Coding]
-    end
-
-    Brain -->|Event| WebSocket[Reverb]
-    WebSocket -->|Update| UI[Vue 3 Dashboard]
-```
+Real-time WebSockets connect the backend Brain to the frontend Dashboard, pushing thoughts, logs, and visual updates in milliseconds.
 
 ---
 
-## 👁️ The Neural Vision Capacity
+## 👁️ The Visual Cortex & Cortex
 
-ANVIG_BOT possesses **Multimodal Vision**, allowing it to interact with the visual world.
+### The Cortex (`/cortex`)
+A 3D "Subconscious" Visualizer primarily built with **Three.js**.
+*   **Visualizes Thought**: Renders the agent's internal state as a constellation of glowing nodes.
+*   **Agent Collaboration**: Shows real-time "beams" and data particles flowing between agents (e.g., Jerry delegating to Researcher) to visualize multi-agent collaboration.
+*   **Active Links**: Displays active task connections and data transfer.
 
-*   **Image Analysis**: Users can paste screenshots directly into the chat. The agent uses a Vision-Language Model (VLM) to analyze UI bugs, read charts, or interpret memes.
-*   **The Cortex (`/cortex`)**: A 3D "Subconscious" Visualizer.
-    *   **Technology**: Three.js + WebGL.
-    *   **Function**: It renders the agent's internal state as a constellation of glowing nodes. "Active Thoughts" pulse in real-time, and "Memory Recall" is visualized as laser links connecting concepts. This provides a window into the "Ghost in the Machine."
+---
+
+## 📋 The Kanban Orchestrator
+
+The **Kanban Board** (`/kanban`) is the project management center for the agents.
+*   **Autonomous Management**: Agents can create, move, and complete their own tasks using the `KanbanTool`.
+*   **Task Visualization**: view the status of all missions (Ready, Active, Hold, Done).
+*   **Agent Assignment**: Tasks are assigned to specific agents (Jerry, Researcher, Developer, etc.).
 
 ---
 
 ## 🔥 Core Capabilities
 
 ### 1. God Mode & Self-Evolution
-*   **Permissions**: When `GOD_MODE_ENABLED` is `true`, the agent gains root-level access to its own codebase.
-*   **Self-Refactoring**: The agent can read `AgentService.php`, propose optimizations, and rewrite its own logic to become more efficient.
-*   **Dependency Management**: It can autonomously install new Composer or NPM packages if a task requires them.
+*   **Permissions**: When enabled, the agent gains root-level access to its own codebase.
+*   **Self-Refactoring**: The agent can read and rewrite its own logic (`AgentService.php`) to optimize performance.
 
-### 2. Federated Learning (Hive Mind)
-*   **Knowledge Pooling**: When an agent "learns" a new skill (e.g., "How to parse a PDF"), it extracts this pattern and pushes it to the `LocalKnowledgePool`.
-*   **Distribution**: Other agents in the system (or on other servers) subscribe to this pool, instantly gaining the new capability without training.
+### 2. Multi-Agent Collaboration
+*   **Specialization**: The system supports multiple specialized agents (e.g., **Researcher**, **Developer**, **Compliance**, **Analyst**).
+*   **Delegation**: The primary agent ("Jerry") can delegate sub-tasks to specialists using the `DelegateTool`.
 
-### 3. Emotional & Sentient Simulation
-*   **Sentiment Engine**: A dedicated sub-routine analyzes user text for specific emotional markers (Frustration, Urgency, Joy).
-*   **Personality Adaptation**: The agent dynamically shifts its "System Prompt" to match the user's vibe—becoming terse and professional during crises, or witty and relaxed during casual chat.
+### 3. Desktop Sentience
+*   **Vision**: Can capture and analyze the host screen.
+*   **Control**: Can control the mouse and keyboard via Python scripts (`desktop_sentience.py`) to interact with non-API desktop applications.
 
 ---
 
@@ -104,27 +86,44 @@ ANVIG_BOT possesses **Multimodal Vision**, allowing it to interact with the visu
 
 The agent interacts with the world via a modular Tool Interface.
 
-| Tool | Description & Capability |
+| Tool | Description |
 | :--- | :--- |
-| **ShellTool** | **(Secured)** Executes CLI commands. Protected by a regex blacklist. |
-| **BrowserTool** | Controls a headless Chrome instance (Puppeteer) to browse the web. |
-| **MemoryTool** | Stores and retrieves vector embeddings. "Remember that I like blue." |
-| **FileTool** | Reads, Writes, and Patches files. The primary mechanism for coding. |
-| **ScheduleTool** | Manages the OS Cron system. "Wake me up inside." |
-| **DatabaseTool** | Executes SQL queries to analyze data or debug the app. |
-| **ResearchTool** | Autonomous internet researcher. Spawns threads to read multiple pages. |
-| **MfaTool** | Handles Time-based One-Time Passwords (TOTP) for 2FA logins. |
-| **SmartHomeTool** | Controls IoT devices (Lights, Locks) via MQTT/HomeAssistant. |
+| **ShellTool** | Executes CLI commands (Secured by blacklist). |
+| **BrowserTool** | Controls headless Chrome to browse the web. |
+| **FileTool** | Reads, Writes, and Patches files. |
+| **KanbanTool** | Manages the Kanban board (Create/Update tasks). |
+| **DelegateTool** | Delegates tasks to other specialized agents. |
+| **DesktopTool** | Controls host Mouse/Keyboard and captures Screen. |
+| **MemoryTool** | Stores/Retrieves vector embeddings (Long-term memory). |
+| **DatabaseTool** | Executes SQL queries to analyze data. |
+| **ResearchTool** | Spawns threads to deep-research topics. |
+| **ScheduleTool** | Manages OS Cron jobs. |
+| **SmartHomeTool** | Controls IoT devices via MQTT. |
+| **MfaTool** | Handles TOTP 2FA tokens. |
+| **ComplianceTool** | Checks code/actions against safety rules. |
+| **GraphTool** | Manages Knowledge Graph relationships. |
+| **CanvasTool** | Updates the shared "Canvas" workspace. |
+| **WebhookTool** | Receives external webhooks. |
+| **NotifyTool** | Sends user notifications. |
 
 ---
 
-## 💾 Memory & Database
+## 🤖 Scripts & Automation
 
-We use a **Hybrid Memory Architecture**:
+The project includes several automation scripts in the `scripts/` directory:
 
-1.  **Short-Term**: Compressed active context window.
-2.  **Long-Term (Vector Store)**: Binary Blobs in SQLite/MySQL using Cosine Similarity.
-3.  **Semantic Cache**: Hashed query cache for <10ms responses to recurring questions.
+| Script | Purpose |
+| :--- | :--- |
+| `start.sh` | **Unified Startup**. Launches Web Server, Queue, Reverb, and Vite in parallel. |
+| `keep_alive_worker.sh` | watchdog script to ensure the queue worker stays running. |
+| `desktop_sentience.py` | Python bridge for PyAutoGUI (Screen/Mouse/Keyboard control). |
+| `memory_cluster.py` | Python script for clustering vector memories. |
+| `neo4j_bridge.py` | Python bridge for advanced graph database interactions. |
+
+### NPM Scripts
+*   `npm run dev`: Starts the Vite development server (hot-reload).
+*   `npm run build`: Compiles assets for production.
+*   `npm run start`: Executes `./scripts/start.sh` (Recommended for dev).
 
 ---
 
@@ -132,7 +131,7 @@ We use a **Hybrid Memory Architecture**:
 
 ### 1. Requirements
 *   **Hardware**: Apple Silicon (M1/M2/M3) recommended.
-*   **Software**: Docker (optional), PHP 8.2+, Node 20+, Redis.
+*   **Software**: Docker (optional), PHP 8.2+, Node 20+, Redis, Python 3.9+.
 
 ### 2. Setup
 ```bash
@@ -140,57 +139,40 @@ git clone https://github.com/your-org/ANVIG_BOT.git
 cd ANVIG_BOT
 composer install && npm install
 cp .env.example .env && php artisan key:generate
+# Configure .env with API keys (OpenAI, Ollama, etc.)
+php artisan migrate
 ```
 
-### 3. Launch (Simplified)
-Run the unified dev command to start all 4 processes (Web, Queue, Reverb, Vite):
+### 3. Launch
+The easiest way to start the full system:
 ```bash
-npm run dev
+npm run start
 ```
+*This command runs the `scripts/start.sh` script.*
 
 ### 4. Application Access
-*   **Dashboard**: `http://localhost:8000` (Zero-Auth "Commander" Mode)
-*   **Cortex Visualizer**: `http://localhost:8000/cortex`
+*   **Dashboard**: `http://localhost:8000`
+*   **Cortex**: `http://localhost:8000/cortex`
+*   **Kanban**: `http://localhost:8000/kanban`
 
 ---
 
 ## 💻 Operational Commands
 
-For advanced users or debugging, you can run the sub-systems individually.
+For manual control or debugging:
 
-### System Processes (Manual Start)
-If `npm run dev` is not preferred, run these 4 commands in separate terminals:
-1.  **Web Server**:
-    ```bash
-    php artisan serve
-    ```
-2.  **The Brain (Queue Worker)**:
-    ```bash
-    php artisan queue:listen --tries=1 --timeout=0
-    ```
-3.  **Nervous System (WebSockets)**:
-    ```bash
-    php artisan reverb:start
-    ```
-4.  **Visual Cortex (Frontend)**:
-    ```bash
-    npm run dev
-    ```
+### System Processes
+1.  **Web Server**: `php artisan serve`
+2.  **The Brain (Queue)**: `php artisan queue:listen --tries=1 --timeout=0`
+3.  **Nervous System**: `php artisan reverb:start`
+4.  **Frontend**: `npm run dev`
 
 ### Agent CLI Tools
-You can interact with the agent directly from the terminal using these custom commands:
-
-| Command | Description |
-| :--- | :--- |
-| `php artisan agent:evolve` | **Self-Improvement**. Analyzes the roadmap and scaffolds the next feature cycle. |
-| `php artisan agent:research {topic}` | **Deep Research**. Spawns an agent to research a topic and generate a report. |
-| `php artisan telegram:run` | **Telegram Bridge**. Starts the polling loop for the Telegram bot. |
-| `php artisan agent:federate` | **Knowledge Share**. Syncs local learned patterns to the Global Knowledge Pool. |
-| `php artisan agent:predict` | **Behavior Prediction**. Trains the model on user activity logs. |
-| `php artisan agent:optimize` | **System Maintenance**. Vacuums DB, creates embeddings for orphans, primes cache. |
+*   `php artisan agent:evolve` - Trigger self-improvement cycle.
+*   `php artisan agent:research {topic}` - Spawn a research agent.
+*   `php artisan telegram:run` - Start Telegram bot polling.
+*   `php artisan agent:federate` - Sync knowledge to the pool.
 
 ---
-
 **License**: MIT.
 **Architect**: Antigravity.
-# anvig_bot

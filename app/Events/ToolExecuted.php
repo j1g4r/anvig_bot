@@ -16,7 +16,8 @@ class ToolExecuted implements ShouldBroadcastNow
         public int $traceId,
         public $output,
         public int $durationMs,
-        public string $status
+        public string $status,
+        public array $usage = []
     ) {}
 
     public function broadcastOn(): array

@@ -27,6 +27,8 @@ Schedule::command('agent:federate')->dailyAt('03:00')->withoutOverlapping();
 Schedule::command('agent:evolve')->weeklyOn(1, '06:00');
 Schedule::command('agent:research')->weeklyOn(5, '20:00'); // Fridays
 Schedule::command('agent:optimize')->weeklyOn(0, '04:00'); // Sundays
+Schedule::command('agent:ensure-active')->everyMinute();
+Schedule::command('monitoring:prune')->daily()->at('01:00'); // Daily cleanup
 
 // Dynamic Agent Cron Jobs
 try {

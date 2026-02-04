@@ -11,7 +11,7 @@ class MonitoringService
     /**
      * Start a new tool trace.
      */
-    public function startTrace(int $conversationId, int $agentId, string $toolName, array $input): Trace
+    public function startTrace(int $conversationId, int $agentId, string $agentName, string $toolName, array $input): Trace
     {
         $trace = Trace::create([
             'conversation_id' => $conversationId,
@@ -25,6 +25,7 @@ class MonitoringService
             $trace->id,
             $conversationId,
             $agentId,
+            $agentName,
             $toolName,
             $input
         ));
@@ -35,21 +36,30 @@ class MonitoringService
     /**
      * Complete an existing trace.
      */
-    public function endTrace(Trace $trace, $output, string $status = 'success'): void
+    public function endTrace(Trace $trace, $output, string $status = 'success', array $usage = []): void
     {
         $duration = (int) (microtime(true) * 1000) - (int) ($trace->created_at->getTimestamp() * 1000);
         
-        $trace->update([
+        $updateData = [
             'output' => is_array($output) ? $output : ['raw' => $output],
             'duration_ms' => $duration,
             'status' => $status,
-        ]);
+        ];
+
+        if (!empty($usage)) {
+            $updateData['tokens_input'] = $usage['prompt_tokens'] ?? null;
+            $updateData['tokens_output'] = $usage['completion_tokens'] ?? null;
+            $updateData['tokens_total'] = $usage['total_tokens'] ?? null;
+        }
+
+        $trace->update($updateData);
 
         broadcast(new ToolExecuted(
             $trace->id,
             $output,
             $duration,
-            $status
+            $status,
+            $usage // Pass usage to frontend event if needed later
         ));
     }
 }

@@ -67,7 +67,13 @@ class AgentService
         $conversation->refresh();
 
         // Load messages
-        $messages = $conversation->messages()->orderBy('id')->get();
+        // Load messages (Limit to last 30 to prevent context overflow)
+        // We take from end, but sort by ID asc for the prompt
+        $messages = $conversation->messages()
+            ->latest('id')
+            ->take(30)
+            ->get()
+            ->sortBy('id');
         
         $context = [];
         // 2. Add Summary as the lead context if it exists
@@ -213,7 +219,8 @@ Example:
                 ];
                 if (!empty($availableTools)) $params['tools'] = $availableTools;
                 
-                $response = OpenAI::chat()->create($params);
+                $ai = new \App\Services\AI\AIService();
+                $response = $ai->chat($params, ['context' => 'agent_loop', 'conversation_id' => $conversation->id, 'agent_id' => $conversation->agent_id]);
                 
                 // Store result in cache if applicable (No tool calls, reasonable length)
                 $choice = $response->choices[0];
@@ -244,6 +251,31 @@ Example:
             'tool_calls' => $toolCalls ? array_map(fn($tc) => $tc->toArray(), $toolCalls) : null,
         ]);
 
+        // Capture Thought Process for Monitoring
+        // Capture Thought Process for Monitoring
+        if (preg_match('/<THOUGHT>\s*(.*?)\s*<\/THOUGHT>/is', $messageContent, $matches)) {
+            $thoughtContent = $matches[1];
+            $monitoring = new MonitoringService();
+            
+            // Extract usage info from response if available
+            $usage = isset($response->usage) ? [
+                'prompt_tokens' => $response->usage->promptTokens,
+                'completion_tokens' => $response->usage->completionTokens,
+                'total_tokens' => $response->usage->totalTokens,
+            ] : [];
+
+            // Log as a "Thinking" trace
+            $trace = $monitoring->startTrace(
+                $conversation->id,
+                $conversation->agent_id,
+                $conversation->agent->name ?? 'Unknown Agent',
+                'cognitive_process', // Tool name equivalent
+                ['thought' => $thoughtContent, 'plan' => preg_match('/<PLAN>\s*(.*?)\s*<\/PLAN>/s', $messageContent, $pm) ? $pm[1] : null]
+            );
+            
+            $monitoring->endTrace($trace, ['status' => 'completed'], 'success', $usage);
+        }
+
         // 6. Capture interaction for continuous learning
         if ($messageContent && !$toolCalls) {
             // Only capture final responses (not tool-calling steps)
@@ -270,6 +302,7 @@ Example:
                 $trace = $monitoring->startTrace(
                     $conversation->id,
                     $conversation->agent_id,
+                    $conversation->agent->name ?? 'Unknown Agent',
                     $functionName,
                     $arguments
                 );

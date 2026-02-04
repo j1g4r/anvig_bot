@@ -6,13 +6,22 @@ use App\Services\EmbeddingService;
 use Illuminate\Support\Facades\DB;
 use App\Models\Agent;
 
-class MemoryTool implements ToolInterface
+use App\Services\Tools\ContextAwareToolInterface;
+use App\Models\Conversation;
+
+class MemoryTool implements ToolInterface, ContextAwareToolInterface
 {
     protected EmbeddingService $embedder;
+    protected ?Conversation $conversation = null;
 
     public function __construct()
     {
         $this->embedder = new EmbeddingService();
+    }
+
+    public function setConversation(Conversation $conversation): void
+    {
+        $this->conversation = $conversation;
     }
 
     public function name(): string
@@ -53,9 +62,8 @@ class MemoryTool implements ToolInterface
             return "Error: content required.";
         }
 
-        // We assume Agent ID 1 (Jerry) for now since we don't have context injection in Tools yet.
-        // Ideally ID comes from context. Let's find first agent.
-        $agentId = Agent::first()->id; 
+        // Use context agent ID if available, fallback to 1 (System)
+        $agentId = $this->conversation ? $this->conversation->agent_id : 1; 
 
         if ($action === 'save') {
             // Simple Chunking Strategy (approx 500 words / 3000 chars per chunk)

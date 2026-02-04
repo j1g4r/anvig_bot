@@ -86,7 +86,7 @@ class AgentController extends Controller
     {
         return Inertia::render('Cortex/Index', [
             'agents' => Agent::all(),
-            'conversations' => Conversation::with('agent')->where('status', 'active')->get(),
+            'conversations' => Conversation::with(['agent', 'participants.agent'])->where('status', 'active')->get(),
         ]);
     }
 

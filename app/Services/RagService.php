@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services;
+use App\Services\AI\AIService;
 
 use App\Models\Document;
 use App\Models\DocumentChunk;
@@ -81,10 +82,11 @@ class RagService
     protected function generateEmbedding(string $text): ?array
     {
         try {
-            $response = \OpenAI\Laravel\Facades\OpenAI::embeddings()->create([
+            $ai = new AIService();
+            $response = $ai->embedding([
                 'model' => 'text-embedding-3-small',
-                'input' => substr($text, 0, 8000),
-            ]);
+                'input' => $text,
+            ], ['context' => 'rag_embedding']);
 
             return $response->embeddings[0]->embedding;
         } catch (\Exception $e) {

@@ -141,8 +141,11 @@ const getTasksByStatus = (status) => {
                                 class="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all group"
                             >
                                 <div class="flex justify-between items-start mb-3">
-                                    <div :class="['px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest border', getPriorityClass(task.priority)]">
-                                        {{ task.priority }}
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] font-mono font-bold text-gray-400 dark:text-gray-500">#{{ task.id }}</span>
+                                        <div :class="['px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest border', getPriorityClass(task.priority)]">
+                                            {{ task.priority }}
+                                        </div>
                                     </div>
                                     <div class="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                         <button @click="deleteTask(task)" class="p-1.5 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-md">
@@ -238,6 +241,7 @@ const getTasksByStatus = (status) => {
 .line-clamp-3 {
     display: -webkit-box;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }

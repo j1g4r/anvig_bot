@@ -51,6 +51,10 @@ Route::prefix('')->group(function () {
         Route::delete('/', [\App\Http\Controllers\MfaController::class, 'destroy'])->name('destroy');
     });
 
+    // Analytics
+    Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
+    Route::get('/analytics/stats', [\App\Http\Controllers\AnalyticsController::class, 'stats'])->name('analytics.stats');
+
     Route::prefix('documents')->name('documents.')->group(function () {
         Route::get('/', [\App\Http\Controllers\DocumentController::class, 'index'])->name('index');
         Route::post('/', [\App\Http\Controllers\DocumentController::class, 'store'])->name('store');
@@ -87,6 +91,10 @@ Route::prefix('')->group(function () {
         Route::post('/{node}/health', [\App\Http\Controllers\OllamaClusterController::class, 'healthCheck'])->name('health');
         Route::post('/health-all', [\App\Http\Controllers\OllamaClusterController::class, 'healthCheckAll'])->name('health.all');
         Route::post('/{node}/pull', [\App\Http\Controllers\OllamaClusterController::class, 'pullModel'])->name('pull');
+    });
+    Route::prefix('voice')->name('voice.')->group(function () {
+        Route::post('/transcribe', [\App\Http\Controllers\VoiceController::class, 'transcribe'])->name('transcribe');
+        Route::post('/speak', [\App\Http\Controllers\VoiceController::class, 'speak'])->name('speak');
     });
 });
 // require __DIR__.'/auth.php';

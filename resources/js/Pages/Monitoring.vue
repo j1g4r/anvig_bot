@@ -18,6 +18,7 @@ onMounted(() => {
                     id: e.traceId,
                     conversation_id: e.conversationId,
                     agent_id: e.agentId,
+                    agent_name: e.agentName,
                     tool_name: e.toolName,
                     input: e.input,
                     status: 'executing',
@@ -84,6 +85,8 @@ const getStatusColor = (status) => {
                             <thead>
                                 <tr class="bg-gray-50/50 dark:bg-gray-900/50 text-[10px] uppercase tracking-widest font-black text-gray-500 dark:text-gray-400">
                                     <th class="px-4 py-2 w-24">Time</th>
+                                    <th class="px-4 py-2 w-32">Agent</th>
+                                    <th class="px-4 py-2 w-24">Task</th>
                                     <th class="px-4 py-2 w-32">Tool</th>
                                     <th class="px-4 py-2">Input / Output</th>
                                     <th class="px-4 py-2 w-24">Status</th>
@@ -98,26 +101,56 @@ const getStatusColor = (status) => {
                                         </span>
                                     </td>
                                     <td class="px-4 py-2 align-top">
+                                        <span class="text-xs font-bold text-emerald-500 uppercase tracking-tight">
+                                            {{ trace.agent_name || trace.agent?.name || 'Agent ' + trace.agent_id }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-2 align-top">
+                                        <span class="text-xs font-mono font-bold text-gray-500 dark:text-gray-400">
+                                            #{{ trace.conversation_id }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-2 align-top">
                                         <div class="flex items-center space-x-2">
-                                            <div class="w-6 h-6 rounded bg-indigo-500/10 flex items-center justify-center">
+                                            <div v-if="trace.tool_name === 'cognitive_process'" class="w-6 h-6 rounded bg-violet-500/10 flex items-center justify-center">
+                                                <span class="text-[12px]">🧠</span>
+                                            </div>
+                                            <div v-else class="w-6 h-6 rounded bg-indigo-500/10 flex items-center justify-center">
                                                 <span class="text-[10px] font-black text-indigo-500 uppercase">T</span>
                                             </div>
                                             <span class="text-sm font-black text-gray-900 dark:text-white tracking-tight">
-                                                {{ trace.tool_name }}
+                                                {{ trace.tool_name === 'cognitive_process' ? 'Thinking' : trace.tool_name }}
                                             </span>
                                         </div>
                                     </td>
                                     <td class="px-4 py-2 align-top">
                                         <div class="flex flex-col space-y-2">
-                                            <!-- Input -->
-                                            <div>
-                                                <span class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Input</span>
-                                                <pre class="text-[11px] font-mono text-gray-600 dark:text-gray-300 bg-black/5 dark:bg-black/30 p-3 rounded-lg whitespace-pre-wrap break-all border border-gray-200 dark:border-gray-800">{{ typeof trace.input === 'string' ? trace.input : JSON.stringify(trace.input, null, 2) }}</pre>
+                                            <!-- Cognitive Process Special View -->
+                                            <div v-if="trace.tool_name === 'cognitive_process'">
+                                                <div v-if="trace.input.thought" class="mb-2">
+                                                    <span class="text-[9px] uppercase font-bold text-violet-500 block mb-1">Thought</span>
+                                                    <p class="text-xs text-gray-700 dark:text-gray-300 italic border-l-2 border-violet-500 pl-2">
+                                                        "{{ trace.input.thought }}"
+                                                    </p>
+                                                </div>
+                                                <div v-if="trace.input.plan">
+                                                    <span class="text-[9px] uppercase font-bold text-blue-500 block mb-1">Plan</span>
+                                                    <pre class="text-[10px] text-gray-600 dark:text-gray-400 whitespace-pre-wrap font-mono">{{ trace.input.plan }}</pre>
+                                                </div>
                                             </div>
-                                            <!-- Output -->
-                                            <div v-if="trace.output">
-                                                <span class="text-[9px] uppercase font-bold text-emerald-500 block mb-1">Output</span>
-                                                <pre class="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 p-3 rounded-lg whitespace-pre-wrap break-all border border-emerald-200 dark:border-emerald-900/50">{{ typeof trace.output === 'string' ? trace.output : JSON.stringify(trace.output, null, 2) }}</pre>
+
+                                            <!-- Standard Tool View -->
+                                            <div v-else>
+                                                <!-- Input -->
+                                                <div>
+                                                    <span class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Input</span>
+                                                    <pre class="text-[11px] font-mono text-gray-600 dark:text-gray-300 bg-black/5 dark:bg-black/30 p-3 rounded-lg whitespace-pre-wrap break-all border border-gray-200 dark:border-gray-800">{{ typeof trace.input === 'string' ? trace.input : JSON.stringify(trace.input, null, 2) }}</pre>
+                                                </div>
+                                                <!-- Output -->
+                                                <div v-if="trace.output">
+                                                    <span class="text-[9px] uppercase font-bold text-emerald-500 block mb-1">Output</span>
+                                                    <pre class="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 p-3 rounded-lg whitespace-pre-wrap break-all border border-emerald-200 dark:border-emerald-900/50">{{ typeof trace.output === 'string' ? trace.output : JSON.stringify(trace.output, null, 2) }}</pre>
+                                                </div>
                                             </div>
                                         </div>
                                     </td>

@@ -35,32 +35,32 @@ class ContextService
             $historyText .= strtoupper($msg->role) . ": " . $msg->content . "\n\n";
         }
 
+        $existingSummary = $conversation->summary ? "EXISTING SUMMARY:\n" . $conversation->summary . "\n\n" : "";
+
         // 4. Request Summary from AI
         try {
-            $prompt = "You are a context compression engine. Below is a conversation history.\n" .
-                "Summarize this history into a single, concise narrative that preserves:\n" .
-                "1. All key decisions made.\n" .
-                "2. Current mission status and objectives.\n" .
-                "3. Crucial facts or credentials discovered.\n" .
-                "4. The current active specialist agent's progress.\n\n" .
-                "Keep the summary under 500 words. Do not include tool call syntax, just pure context.\n\n" .
-                "HISTORY:\n$historyText";
+            $prompt = "You are a context compression engine. " .
+                "Your goal is to MERGE the 'Existing Summary' (if any) with the 'Recent History' into a SINGLE, updated narrative.\n\n" .
+                "RULES:\n" .
+                "1. Do NOT simply append the new events. Rewrite the narrative to incorporate them.\n" .
+                "2. Drop minor details or resolved sub-tasks.\n" .
+                "3. Preserve critical decisions, active objectives, and permanent facts.\n" .
+                "4. Keep the total length under 600 words.\n\n" .
+                $existingSummary .
+                "RECENT HISTORY TO MERGE:\n$historyText";
 
-            $response = OpenAI::chat()->create([
+            $ai = new \App\Services\AI\AIService();
+            $response = $ai->chat([
                 'model' => $conversation->agent->model,
                 'messages' => [
                     ['role' => 'system', 'content' => $prompt]
                 ],
-            ]);
+            ], ['context' => 'compression', 'conversation_id' => $conversation->id]);
 
             $summary = $response->choices[0]->message->content;
 
-            // 5. Update Conversation Summary
-            $newSummary = $conversation->summary 
-                ? "PREVIOUS SUMMARY: " . $conversation->summary . "\n\nNEW CONTEXT: " . $summary
-                : $summary;
-
-            $conversation->update(['summary' => $newSummary]);
+            // 5. Update Conversation Summary (Overwrite with new merged version)
+            $conversation->update(['summary' => $summary]);
 
             // 6. Hard-delete or mark compressed messages? 
             // For now, let's delete them to save DB space and keep the 'messages' relationship lean.

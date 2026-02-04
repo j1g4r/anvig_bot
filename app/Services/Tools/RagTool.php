@@ -3,6 +3,7 @@
 namespace App\Services\Tools;
 
 use App\Services\RagService;
+use App\Services\AI\AIService;
 use Illuminate\Support\Facades\Auth;
 
 class RagTool implements ToolInterface

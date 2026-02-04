@@ -59,6 +59,12 @@ const isVisible = (key) => navVisibility.value[key] !== false;
                                     Memory Vault
                                 </NavLink>
                                 <NavLink
+                                    :href="route('analytics.index')"
+                                    :active="route().current('analytics.*')"
+                                >
+                                    📊 Analytics
+                                </NavLink>
+                                <NavLink
                                     v-if="isVisible('monitoring')"
                                     :href="route('monitoring')"
                                     :active="route().current('monitoring')"
@@ -234,6 +240,12 @@ const isVisible = (key) => navVisibility.value[key] !== false;
                             :active="route().current('agents.vault')"
                         >
                             Memory Vault
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('analytics.index')"
+                            :active="route().current('analytics.*')"
+                        >
+                            📊 Analytics
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             v-if="isVisible('monitoring')"

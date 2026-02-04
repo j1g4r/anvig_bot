@@ -16,6 +16,7 @@ class ToolExecuting implements ShouldBroadcastNow
         public int $traceId,
         public int $conversationId,
         public int $agentId,
+        public string $agentName,
         public string $toolName,
         public array $input
     ) {}
