@@ -21,13 +21,13 @@ class MonitoringService
             'status' => 'executing',
         ]);
 
-        broadcast(new ToolExecuting(
+//         broadcast(new ToolExecuting(
             $trace->id,
             $conversationId,
             $agentId,
             $agentName,
             $toolName,
-            $input
+            $this->truncateForBroadcast($input)
         ));
 
         return $trace;
@@ -56,10 +56,33 @@ class MonitoringService
 
         broadcast(new ToolExecuted(
             $trace->id,
-            $output,
+            $this->truncateForBroadcast($output),
             $duration,
             $status,
-            $usage // Pass usage to frontend event if needed later
+            $usage 
         ));
+    }
+
+    /**
+     * Truncate data to ensure it fits within Pusher/Reverb message limits (10KB safe limit).
+     */
+    protected function truncateForBroadcast($data, int $maxLength = 4096)
+    {
+        if (is_string($data)) {
+            return strlen($data) > $maxLength 
+                ? substr($data, 0, $maxLength) . "... (Truncated for Stream)" 
+                : $data;
+        }
+
+        if (is_array($data)) {
+            $json = json_encode($data);
+            if (strlen($json) <= $maxLength) {
+                return $data;
+            }
+            // If array is too big, try to truncate widely
+            return ['note' => 'Payload too large for real-time stream. Check database for full details.'];
+        }
+
+        return $data;
     }
 }

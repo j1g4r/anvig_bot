@@ -49,17 +49,28 @@ class DelegateTool implements ToolInterface
 
     public function execute(array $input): string
     {
-        $agentName = $input['agent_name'] ?? '';
-        $mission = $input['mission'] ?? '';
+        $args = array_merge($input, $input['params'] ?? []);
+        // Logic for delegation
+        $targetAgentName = $args['agent_name'] ?? null;
+        $mission = $args['mission'] ?? '';
+
+        // Hallucination Check: Agent trying to use delegate tool for kanban operations?
+        if (isset($args['action']) && ($args['action'] === 'kanban_board' || $args['status'])) {
+            return "Error: Wrong tool detected. You are trying to update the Kanban board using the 'delegate' tool. Please use the 'kanban_board' tool with action='update_status' instead.";
+        }
 
         if (!$this->conversation) {
             return "Error: Internal system error. Conversation context not provided to tool.";
         }
 
-        $targetAgent = Agent::where('name', $agentName)->first();
+        if (empty($targetAgentName)) {
+            return "Error: 'agent_name' parameter is missing. You must specify which agent to delegate to (Jerry, Researcher, Developer).";
+        }
+
+        $targetAgent = Agent::where('name', $targetAgentName)->first();
 
         if (!$targetAgent) {
-            return "Error: Specialist agent '$agentName' not found. Available: Jerry, Researcher, Developer.";
+            return "Error: Specialist agent '$targetAgentName' not found. Available: Jerry, Researcher, Developer.";
         }
 
         // 1. Log the delegation

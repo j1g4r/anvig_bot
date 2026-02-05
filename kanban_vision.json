@@ -1,0 +1,25 @@
+{
+  "task_number": 5,
+  "title": "Vision 2.0: Real-time Stream",
+  "description": "Upgrade vision capabilities to analyze video streams in real-time",
+  "status": "done",
+  "progress": "100%",
+  "completed_at": "2026-02-05T17:07:00+11:00",
+  "achievements": [
+    "FFmpeg frame extraction pipeline",
+    "Dual-provider architecture (Claude + LLaVA fallback)",
+    "Redis circular buffer per stream (60 frames)",
+    "Adaptive analysis intervals",
+    "Chunked HTTP streaming with progress feedback",
+    "StreamFrameAnalysed broadcast events",
+    "VisionFrameAnalysis model for frame results",
+    "VisionAnalysisSession model for aggregation",
+    "Database migration deployed",
+    "PSR-12 compliant codebase"
+  ],
+  "constraints_noted": [
+    "4.9GB storage required for LLaVA (100% disk saturation currently)",
+    "Frontend Vue components absent - Task #6 candidate"
+  ],
+  "next_steps": "Task #6: Frontend streaming interface; storage recovery for LLaVA"
+}

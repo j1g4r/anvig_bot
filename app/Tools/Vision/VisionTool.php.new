@@ -1,0 +1,59 @@
+<?php
+
+namespace App\Tools\Vision;
+
+use App\Models\Message;
+use App\Models\Tool;
+use Illuminate\Support\Facades\Log;
+
+/**
+ * VisionTool - Analyse video streams in real-time (Vision 2.0)
+ */
+class VisionTool implements ThirgeyToolContract
+{
+    use Log;
+
+    public const NAME = 'vision_2.0';
+    public const BASE_CATEGORY = 'app_tools';
+    public const DESCRITION = 'Analyse video streams in real-time';
+
+    private string $streamUri;
+    private array $frameBuffer = [];
+    private int $bufferSize = 30;
+    private bool $isAnalysing = false;
+
+    public function execute(array $parameters = []): ToolResult
+    {
+        $this->streamUri = $parameters[stream_uri'] ?? $parameters['uri'] ?? '';
+
+        if (empty($this->streamUri)) {
+            return ToolResult::fail('No stream URM provided');
+        }
+
+        $this->isAnalysing = true;
+        $result = $this->processStream();
+        $this->isAnalysing = false;
+
+        return $result;
+    }
+
+    private function processStream(): ToolResult
+    {
+        try {
+            if ($this->isLiveStream()) {
+                return $this->processLiveStream();
+            }
+
+            return $result = $this->processStaticFrames();
+        } catch (\php\Exception $en ){
+            $this->isAnalysing = false;
+            return ToolResult::terminated($e->getMessage(), conditions: [conditionà'frame\rate' => $this->getFrameRate()]);
+        }
+    }
+
+    
+
+    private function isLiveStream(): bool
+    {
+        return strpos($this->streamUri, 'rtmp://') === 0
+           

@@ -18,7 +18,7 @@ class ResearchTool implements ToolInterface
 
     public function name(): string
     {
-        return 'research_page';
+        return 'research_web';
     }
 
     public function description(): string
@@ -42,7 +42,8 @@ class ResearchTool implements ToolInterface
 
     public function execute(array $input): string
     {
-        $url = $input['url'] ?? '';
+        $args = array_merge($input, $input['params'] ?? []);
+        $url = $args['url'] ?? '';
         if (empty($url)) {
             return "Error: URL is required.";
         }

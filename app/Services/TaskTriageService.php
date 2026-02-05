@@ -14,15 +14,18 @@ class TaskTriageService
      */
     public function triage(): void
     {
-        $holdTasks = KanbanTask::where('status', 'hold')->get();
+        // 1. Sort backlog by Priority and Age(FIFO)
+        // High priority first, then older tasks first.
+        $holdTasks = KanbanTask::whereIn('status', ['hold', 'todo'])
+            ->orderByRaw("CASE WHEN priority = 'high' THEN 1 WHEN priority = 'medium' THEN 2 ELSE 3 END")
+            ->orderBy('created_at', 'asc')
+            ->get();
+
         if ($holdTasks->isEmpty()) {
             return;
         }
 
         $agents = Agent::all();
-        // Assuming Jerry is ID 1, or we just pick a "Manager"
-        // For simplicity, we'll assign based on keywords or random if no match
-        // In a real LLM scenario, we'd feed the task title to the LLM to pick the best agent.
 
         foreach ($holdTasks as $task) {
             $this->processTask($task, $agents);
@@ -31,37 +34,47 @@ class TaskTriageService
 
     private function processTask(KanbanTask $task, $agents)
     {
-        // Simple heuristic for demo purposes (Role Simulation)
+        // 1. Determine the Best Candidate
         $title = strtolower($task->title);
-        
         $assignedAgentId = null;
-        
-        // Logic mapping (Keyword -> Role/Agent)
-        // Adjust these keywords based on your actual agents
-        if (str_contains($title, 'vision') || str_contains($title, 'design') || str_contains($title, 'mobile')) {
-            $assignedAgentId = 2; // e.g., Frontend/Designer Agent
-        } elseif (str_contains($title, 'test') || str_contains($title, 'protocol')) {
-            $assignedAgentId = 3; // e.g., QA/Safety Agent
-        } elseif (str_contains($title, 'plan') || str_contains($title, 'manage')) {
-            $assignedAgentId = 1; // Jerry (Manager)
-        }
-        
-        // Fallback to random if no keyword match
-        if (!$assignedAgentId && $agents->isNotEmpty()) {
-            $assignedAgentId = $agents->random()->id;
+
+        // Specialized Routing
+        if (str_contains($title, 'vision') || str_contains($title, 'design') || str_contains($title, 'frontend') || str_contains($title, 'ui')) {
+            $assignedAgentId = Agent::where('name', 'Developer')->first()?->id ?? 2;
+        } elseif (str_contains($title, 'research') || str_contains($title, 'analyze') || str_contains($title, 'find')) {
+            $assignedAgentId = Agent::where('name', 'Researcher')->first()?->id;
+        } elseif (str_contains($title, 'audit') || str_contains($title, 'security')) {
+            $assignedAgentId = Agent::where('name', 'Auditor')->first()?->id;
+        } else {
+            // Default to Jerry or Developer for generic tasks
+            $assignedAgentId = Agent::where('name', 'Jerry')->first()?->id ?? 1;
         }
 
+        // 2. BUSY CHECK (Sequential Execution Enforcement)
+        // If the candidate is already working on something, DO NOT assign.
+        // Waiting tasks will stay in 'hold' until the next triage cycle (triggered by task completion).
         if ($assignedAgentId) {
+            $activeTaskCount = KanbanTask::where('agent_id', $assignedAgentId)
+                ->whereIn('status', ['todo', 'in_progress'])
+                ->count();
+
+            if ($activeTaskCount > 0) {
+                // Agent is busy. Skip this task for now.
+                Log::info("Skipping assignment of '{$task->title}' to Agent ID {$assignedAgentId}. Agent is busy with {$activeTaskCount} tasks.");
+                return;
+            }
+
+            // Agent is Free -> Assign
             $task->update([
                 'agent_id' => $assignedAgentId,
-                'status' => 'todo', // Move to Ready
-                'priority' => 'high', // Bump priority
+                'status' => 'in_progress', // Move directly to in_progress to block other assignments immediately
+                'priority' => $task->priority ?? 'medium', 
             ]);
             
             $agentName = $agents->find($assignedAgentId)?->name ?? 'Unknown';
-            Log::info("Jerry assigned task '{$task->title}' to Agent {$agentName}");
+            Log::info("✅ Jerry dispatched task '{$task->title}' to Agent {$agentName}");
             
-            // Trigger the agent to start working
+            // Trigger the job
             ProcessKanbanTask::dispatch($task);
         }
     }

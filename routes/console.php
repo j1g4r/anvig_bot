@@ -40,6 +40,10 @@ try {
                 ->description($job->description ?? 'Dynamic Agent Task');
         }
     }
+
+    // Self-Healing System
+    Schedule::command('queue:auto-heal')->everyFiveMinutes();
+
 } catch (\Exception $e) {
     // Fail silently if DB not ready (e.g. during migration)
 }

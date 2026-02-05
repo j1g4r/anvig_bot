@@ -60,29 +60,48 @@ class KanbanTool implements ToolInterface
     public function execute(array $input): string
     {
         try {
-            switch ($input['action']) {
+            // Robustness: Unwrap 'params'
+            $args = array_merge($input, $input['params'] ?? []);
+            $action = $args['action'] ?? '';
+
+            switch ($action) {
                 case 'create_task':
                     $task = KanbanTask::create([
-                        'title' => $input['title'] ?? 'Untitled Task',
-                        'description' => $input['description'] ?? '',
-                        'status' => $input['status'] ?? 'todo',
-                        'priority' => $input['priority'] ?? 'medium',
-                        'agent_id' => $input['agent_id'] ?? null,
+                        'title' => $args['title'] ?? 'Untitled Task',
+                        'description' => $args['description'] ?? '',
+                        'status' => $args['status'] ?? 'todo',
+                        'priority' => $args['priority'] ?? 'medium',
+                        'agent_id' => $args['agent_id'] ?? null,
                     ]);
                     return "Task #{$task->id} [{$task->title}] created on the board.";
 
                 case 'update_status':
-                    $task = KanbanTask::findOrFail($input['task_id']);
-                    $task->update(['status' => $input['status']]);
-                    return "Task #{$task->id} moved to [{$input['status']}].";
+                    $task = KanbanTask::findOrFail($args['task_id']);
+                    $task->update(['status' => $args['status']]);
+                    
+                    if ($args['status'] === 'done') {
+                        (new \App\Services\TaskTriageService())->triage();
+                    }
+
+                    return "Task #{$task->id} moved to [{$args['status']}].";
 
                 case 'assign_agent':
-                    $task = KanbanTask::findOrFail($input['task_id']);
-                    $task->update(['agent_id' => $input['agent_id']]);
-                    return "Task #{$task->id} assigned to Agent ID: " . $input['agent_id'];
+                    $task = KanbanTask::findOrFail($args['task_id']);
+                    $task->update(['agent_id' => $args['agent_id']]);
+                    return "Task #{$task->id} assigned to Agent ID: " . $args['agent_id'];
+
+                // Add missing 'view' action that agents are trying to use
+                case 'view':
+                case 'list':
+                    $tasks = KanbanTask::where('status', '!=', 'done')->get();
+                    $output = "Active Kanban Tasks:\n";
+                    foreach ($tasks as $t) {
+                        $output .= "#{$t->id} [{$t->status}] {$t->title} (Agent: {$t->agent_id})\n";
+                    }
+                    return $output;
 
                 default:
-                    return "Invalid action.";
+                    return "Invalid action: $action. Valid actions: create_task, update_status, assign_agent, view.";
             }
         } catch (\Exception $e) {
             return "Kanban Error: " . $e->getMessage();

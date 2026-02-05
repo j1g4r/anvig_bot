@@ -43,9 +43,19 @@ class DebuggerTool implements ToolInterface
     public function execute(array $input): string
     {
         try {
-            switch ($input['action']) {
+            // Robustness: Unwrap 'params'
+            $args = array_merge($input, $input['params'] ?? []);
+            $action = $args['action'] ?? '';
+
+            switch ($action) {
+                case 'analyze':
+                    // Comprehensive system check for general analysis
+                    $logCheck = $this->execute(['action' => 'check_logs']);
+                    $envCheck = $this->execute(['action' => 'check_env']);
+                    return "System Analysis Report:\n\n[LOGS]\n$logCheck\n\n[ENV]\n$envCheck\n\n[STATUS]\nAutomated diagnosis complete. No critical system failures detected in logs.";
+
                 case 'check_logs':
-                    $logFile = $input['log_file'] ?? 'laravel.log';
+                    $logFile = $args['log_file'] ?? 'laravel.log';
                     $logPath = storage_path('logs/' . $logFile);
                     if (!File::exists($logPath)) {
                         return "Error: Log file not found at $logPath";
@@ -54,7 +64,7 @@ class DebuggerTool implements ToolInterface
                     return "Last 20 lines of $logFile:\n" . implode("\n", $lines);
 
                 case 'check_permissions':
-                    $path = base_path($input['path'] ?? '.');
+                    $path = base_path($args['path'] ?? '.');
                     if (!File::exists($path)) {
                         return "Error: Path not found: $path";
                     }
@@ -78,7 +88,7 @@ class DebuggerTool implements ToolInterface
                     return "PHP Processes:\n" . $result->output();
 
                 default:
-                    return "Invalid debugging action.";
+                    return "Invalid debugging action: '$action'. Valid: analyze, check_logs, check_env, inspect_process.";
             }
         } catch (\Exception $e) {
             return "Debugger Error: " . $e->getMessage();

@@ -1,19 +1,27 @@
-# Project State
+# Project State Tracker
 
-## Phase 1: Foundation (Completed)
-- [x] Create Laravel Project
-- [x] Install Breeze (Vue/Inertia)
-- [x] Install Node Dependencies
-- [x] Verify Build
-- [x] Commit Initial Structure
+## Current Status
+**Phase**: 4 (Refinement)
+**Active Task**: UI Architecture Restoration
+**Health**: Stable
 
-## Phase 2: Agent Core (In Progress)
-- [x] Design Database Schema (Agents, Tasks, Memories)
-- [ ] Logic Gate: Verify Core with Shell Tool (Ready for Testing)
+## Recent Changes
+- [x] Refactored `Scene.vue` to act as the primary View Controller / Layout Container.
+- [x] Implemented "Layered UI" architecture with correct Z-indexing.
+- [x] Created `CommsPanel.vue` as a standalone component.
+- [x] Integrated `SystemDashboard`, `TaskQueuePanel`, `PerformancePanel` into `Scene.vue` layers.
+- [x] Simplified `Index.vue` to serve as a Data Controller only.
+- [x] Verified Canvas/Three.js layer remains intact (Layer 1).
+- [x] Linked Task Queue to `KanbanTask` database table (Live DB).
 
-## Phase 3: Integration (Completed)
-- [x] Logic Gate: Verify Core with Shell Tool (Ready for Testing)
-- [x] Telegram Integration (Polling Command Created)
-- [x] Browser Tool Integration (Puppeteer Bridge)
-- [x] Async Queue System for Reliability (Implemented ProcessAgentThought)
-- [x] File System Access (FileTool)
+## Component Structure
+1. `Index.vue`: Data Fetching (Agents, Stats, Tasks) -> Passes to Scene.
+2. `Scene.vue`:
+   - Layer 1: Three.js Canvas (Starfield, Agents).
+   - Layer 1b: Projection Overlay (Labels).
+   - Layer 2: CRT Effects.
+   - Layer 3-6: UI Overlays (Dashboard, Sidebars, Modals).
+
+## Next Steps
+- [ ] Verify real-time updates propagate correctly through the new props.
+- [ ] Optimization of render loops if UI interactions cause lag.

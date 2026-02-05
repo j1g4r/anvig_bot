@@ -41,9 +41,10 @@ class FileTool implements ToolInterface
 
     public function execute(array $input): string
     {
-        $action = $input['action'] ?? '';
-        $path = $input['path'] ?? '';
-        $content = $input['content'] ?? null;
+        $args = array_merge($input, $input['params'] ?? []);
+        $action = $args['action'] ?? '';
+        $path = $args['path'] ?? '';
+        $content = $args['content'] ?? null;
 
         // Sandbox Security Check
         $rootParams = [base_path()];
@@ -67,7 +68,28 @@ class FileTool implements ToolInterface
                 if (!is_file($realPath)) {
                     return "Error: File not found: $path";
                 }
-                return File::get($realPath);
+                
+                // Binary File Check (Extension)
+                $extension = strtolower(pathinfo($realPath, PATHINFO_EXTENSION));
+                $binaryExtensions = ['sqlite', 'db', 'png', 'jpg', 'jpeg', 'zip', 'tar', 'gz', 'pdf', 'exe', 'dll', 'so', 'dylib', 'class', 'jar', 'ico'];
+                
+                if (in_array($extension, $binaryExtensions)) {
+                    return "Error: Binary file detected (.$extension). Cannot read raw content. Use specific tools for this file type.";
+                }
+
+                $content = File::get($realPath);
+                
+                // content safety check (prevent huge files or binary blobs masquerading as text)
+                if (strlen($content) > 100000) {
+                     return "Error: File too large to read directly (" . strlen($content) . " bytes). Use a tool to read chunks or lines.";
+                }
+                
+                // Fallback: Check for null bytes indicating binary
+                if (strpos($content, "\0") !== false) {
+                    return "Error: Binary content detected (null bytes). Cannot display.";
+                }
+
+                return $content;
 
             case 'write_file':
                 if ($content === null) {

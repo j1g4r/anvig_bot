@@ -26,7 +26,7 @@ class MemoryTool implements ToolInterface, ContextAwareToolInterface
 
     public function name(): string
     {
-        return 'memory_bank';
+        return 'memory_recall';
     }
 
     public function description(): string
@@ -55,11 +55,18 @@ class MemoryTool implements ToolInterface, ContextAwareToolInterface
 
     public function execute(array $input): string
     {
-        $action = $input['action'] ?? '';
-        $content = $input['content'] ?? '';
+        // Robustness: Unwrap 'params'
+        $args = array_merge($input, $input['params'] ?? []);
+
+        $action = $args['action'] ?? '';
+        // Map 'query', 'data', 'value', 'body' to 'content' for robustness
+        $rawContent = $args['content'] ?? ($args['query'] ?? ($args['data'] ?? ($args['value'] ?? ($args['body'] ?? ($args['text'] ?? '')))));
+        
+        // Handle array inputs (e.g. structured data)
+        $content = is_array($rawContent) ? json_encode($rawContent) : (string) $rawContent;
 
         if (empty($content)) {
-            return "Error: content required.";
+            return "Error: content (or query) required.";
         }
 
         // Use context agent ID if available, fallback to 1 (System)

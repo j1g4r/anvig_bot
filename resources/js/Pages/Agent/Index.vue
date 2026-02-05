@@ -8,8 +8,23 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
-defineProps({
+const props = defineProps({
     agents: Array,
+});
+
+const searchQuery = ref('');
+
+import { computed } from 'vue';
+
+const filteredAgents = computed(() => {
+    if (!searchQuery.value) return props.agents;
+    const q = searchQuery.value.toLowerCase();
+    
+    return props.agents.filter(agent => {
+        return agent.name.toLowerCase().includes(q) 
+            || (agent.model && agent.model.toLowerCase().includes(q))
+            || (agent.personality && agent.personality.toLowerCase().includes(q));
+    });
 });
 
 const showEditModal = ref(false);
@@ -59,63 +74,79 @@ const updateAgent = () => {
                 <div class="absolute top-1/2 -right-24 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl"></div>
             </div>
 
-            <div class="mx-auto w-full sm:px-6 lg:px-8">
-                <div class="mb-10 flex justify-between items-end">
+            <!-- Search & Controls -->
+            <div class="mx-auto w-full sm:px-6 lg:px-8 mb-8">
+                <div class="flex flex-col md:flex-row justify-between items-end gap-4">
                     <div>
                         <h3 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
                             Operational Intelligence
                         </h3>
-                        <p class="text-gray-500 dark:text-gray-400">Select an agent unit to initiate command and control.</p>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Select an agent unit to initiate command and control.</p>
                     </div>
-                    <Link :href="route('agents.vault')" class="px-6 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-gray-200 dark:border-gray-700 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:border-indigo-500 transition-all flex items-center space-x-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-indigo-500">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9s2.015-9 4.5-9m0 0c.815 0 1.583.333 2.147.886M12 3c-.815 0-1.583.333-2.147.886" />
-                        </svg>
-                        <span>Memory Vault</span>
-                    </Link>
+                    
+                    <div class="flex gap-4 w-full md:w-auto items-center">
+                        <!-- Search Bar -->
+                        <div class="relative w-full md:w-64">
+                            <TextInput 
+                                v-model="searchQuery" 
+                                placeholder="Search agents..." 
+                                class="w-full bg-white/50 dark:bg-gray-800/50 backdrop-blur border-none text-sm"
+                            />
+                            <svg class="absolute right-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+
+                        <Link :href="route('agents.vault')" class="px-4 py-2 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-gray-200 dark:border-gray-700 rounded-xl text-[10px] font-black uppercase tracking-widest hover:border-indigo-500 transition-all flex items-center space-x-2 whitespace-nowrap">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-indigo-500">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9s2.015-9 4.5-9m0 0c.815 0 1.583.333 2.147.886M12 3c-.815 0-1.583.333-2.147.886" />
+                            </svg>
+                            <span>Memories</span>
+                        </Link>
+                    </div>
                 </div>
+            </div>
 
-                <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                    <div v-for="agent in agents" :key="agent.id" 
-                        class="relative overflow-hidden bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl shadow-2xl rounded-3xl p-1 group transition-all duration-500 hover:-translate-y-2 border border-gray-100 dark:border-gray-700 hover:border-indigo-500/50">
+            <!-- Compact Grid -->
+            <div class="mx-auto w-full sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div v-for="agent in filteredAgents" :key="agent.id" 
+                        class="relative group bg-white dark:bg-gray-900 overflow-hidden rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg hover:border-indigo-500/30 transition-all duration-200">
                         
-                        <!-- Animated Gradient Border on Hover -->
-                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <!-- Hover Gradient -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
 
-                        <div class="relative bg-white dark:bg-gray-900 rounded-[22px] p-8 h-full flex flex-col">
-                            <div class="flex items-center space-x-4 mb-6">
-                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-700 flex items-center justify-center text-white shadow-lg shadow-indigo-500/40 transform group-hover:rotate-12 transition-transform duration-500">
-                                    <span class="text-2xl font-black">{{ agent.name.charAt(0) }}</span>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <h3 class="text-xl font-black text-gray-900 dark:text-white">{{ agent.name }}</h3>
-                                        <button @click="openEditModal(agent)" class="text-gray-400 hover:text-indigo-500 transition-colors">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                              <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 0 1 0 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 0 1 0-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281Z" />
-                                              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                            </svg>
-                                        </button>
+                        <div class="p-5 flex flex-col h-full">
+                            <!-- Header -->
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-600 to-purple-700 flex items-center justify-center text-white shadow-md">
+                                        <span class="text-lg font-black">{{ agent.name.charAt(0) }}</span>
                                     </div>
-                                    <div class="flex items-center space-x-1 text-xs text-indigo-500 font-bold uppercase tracking-widest mt-1">
-                                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                                        <span>Systems Ready</span>
+                                    <div>
+                                        <h3 class="font-bold text-gray-900 dark:text-white text-base leading-tight">{{ agent.name }}</h3>
+                                        <span class="text-[10px] font-mono text-gray-500 uppercase tracking-wide">{{ agent.model }}</span>
                                     </div>
                                 </div>
+                                <button @click="openEditModal(agent)" class="text-gray-400 hover:text-indigo-500 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                </button>
+                            </div>
+                            
+                            <!-- Tools / Tags -->
+                            <div class="mb-4 flex flex-wrap gap-1">
+                                <span v-if="agent.tools_config && agent.tools_config.length" class="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 text-[10px] font-medium border border-indigo-100 dark:border-indigo-800/50">
+                                    {{ agent.tools_config.length }} tools
+                                </span>
+                                <span class="px-2 py-0.5 rounded-md bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-300 text-[10px] font-medium border border-green-100 dark:border-green-800/50 flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Active
+                                </span>
                             </div>
 
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-8 flex-1 leading-relaxed">
-                                Advanced autonomous unit powered by <span class="text-gray-800 dark:text-gray-200 font-mono font-bold">{{ agent.model }}</span>. 
-                                Ready for complex task execution and long-term memory retrieval.
-                            </p>
-
-                            <div class="flex justify-between items-center mt-auto pt-6 border-t border-gray-100 dark:border-gray-800">
-                                <div class="text-xs font-bold text-gray-400 uppercase tracking-tighter">
-                                    {{ agent.conversations_count }} Active Logs
-                                </div>
+                            <!-- Footer -->
+                            <div class="mt-auto pt-3 border-t border-gray-50 dark:border-gray-800 flex justify-between items-center">
+                                <span class="text-[10px] text-gray-400 font-medium">{{ agent.conversations_count }} logs</span>
                                 <Link :href="route('agents.show', agent.id)" 
-                                    class="inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all duration-300 shadow-[0_10px_20px_-5px_rgba(79,70,229,0.5)] active:scale-95">
-                                    Initialize
+                                    class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 hover:underline uppercase tracking-wider">
+                                    Connect &rarr;
                                 </Link>
                             </div>
                         </div>

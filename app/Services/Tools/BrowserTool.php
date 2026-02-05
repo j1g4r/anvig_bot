@@ -9,7 +9,7 @@ class BrowserTool implements ToolInterface
 {
     public function name(): string
     {
-        return 'browser_control';
+        return 'browser';
     }
 
     public function description(): string
@@ -38,8 +38,9 @@ class BrowserTool implements ToolInterface
 
     public function execute(array $input): string
     {
-        $action = $input['action'] ?? 'browse';
-        $url = $input['url'] ?? '';
+        $args = array_merge($input, $input['params'] ?? []);
+        $action = $args['action'] ?? 'browse';
+        $url = $args['url'] ?? '';
 
         if (empty($url)) {
             return "Error: URL is required.";
